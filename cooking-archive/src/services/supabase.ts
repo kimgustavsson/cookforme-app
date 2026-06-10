@@ -6,3 +6,5 @@ const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 export const supabase = createClient(url, anonKey, {
   auth: { persistSession: true, autoRefreshToken: true },
 });
+
+console.log("SUPABASE URL =", process.env.EXPO_PUBLIC_SUPABASE_URL);
