@@ -1,11 +1,4 @@
-import { supabase } from "@/services/supabase";
-import {
-  ScrollView,
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { ScrollView, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
@@ -19,8 +12,6 @@ import { detectSourceKind } from "@/utils/detectSourceKind";
 import { useActiveGroup } from "@/features/groups";
 import { theme } from "@/theme";
 import type { RecipesStackParamList } from "@/app/navigation/types";
-import { createGroup } from "@/features/groups";
-import { Button } from "@/components/ui/Button";
 
 type Nav = NativeStackNavigationProp<RecipesStackParamList, "Home">;
 
@@ -34,13 +25,12 @@ export function HomeScreen() {
   const { activeGroupId } = useActiveGroup();
 
   async function handleSource(input: { url?: string; base64?: string }) {
-    // 1) 소스 종류 판별 → 2) 추출 → 3) draft로 저장 → 4) 확인 화면으로
     const source = input.url
       ? { kind: detectSourceKind(input.url), url: input.url }
       : { kind: "image" as const, base64: input.base64! };
     const result = await scrape.mutateAsync(source as any);
     const draft = await save.mutateAsync({
-      groupId: activeGroupId!, // 현재 활성 그룹에 저장 (남편 그룹 / 가족 그룹 등)
+      groupId: activeGroupId!,
       sourceKind: (source as any).kind,
       sourceUrl: input.url,
       title: result.title ?? "제목 없음",
@@ -56,18 +46,6 @@ export function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>{t("home.title")}</Text>
-
-      <Button
-        label="테스트: 그룹 만들기"
-        onPress={async () => {
-          try {
-            const g = await createGroup("우리집 주방");
-            console.log("만든 그룹:", g.name, "코드:", g.inviteCode);
-          } catch (e) {
-            console.log("에러:", e);
-          }
-        }}
-      />
 
       <Text style={styles.label}>{t("home.recipeLink")}</Text>
       <RecipeLinkInput onSubmit={(url) => handleSource({ url })} />

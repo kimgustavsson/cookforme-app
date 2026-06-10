@@ -26,6 +26,14 @@ export async function createGroup(
   return { ...mapGroup(data), inviteCode: data.invite_code };
 }
 
+// This is for users who just want to uset the app solo without creating a group.
+// It creates a personal group and returns its id.
+export async function createPersonalGroup(): Promise<
+  Group & { inviteCode: string }
+> {
+  return createGroup("My recipes");
+}
+
 // ★ 코드로 참여. 안전한 RPC를 호출 → 참여한 그룹 id를 돌려줌.
 export async function joinGroupByCode(code: string): Promise<string> {
   const { data, error } = await supabase.rpc("join_group_by_code", { code });
