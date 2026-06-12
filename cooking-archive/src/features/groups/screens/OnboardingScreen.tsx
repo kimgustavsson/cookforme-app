@@ -9,13 +9,14 @@ import {
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
-import { useActiveGroup } from "@/features/groups";
+import { useActiveGroup } from "../hooks/useActiveGroup";
 import {
   createGroup,
   createPersonalGroup,
   joinGroupByCode,
-} from "@/features/groups";
+} from "../api/groupApi";
 import { theme } from "@/theme";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Mode = "choose" | "create" | "join" | "done";
 
@@ -30,12 +31,15 @@ export function OnboardingScreen() {
   const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const queryClient = useQueryClient(); // Bring the query client into scope
+
   async function handleCreate() {
     if (!name.trim()) return;
     setBusy(true);
     try {
       const g = await createGroup(name.trim());
       setActiveGroupId(g.id); // 활성 그룹 지정
+      await queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 그룹 목록 갱신
       setCreatedCode(g.inviteCode); // 코드를 크게 보여주기
       setMode("done");
     } catch (e: any) {
@@ -55,6 +59,7 @@ export function OnboardingScreen() {
       const groupId = await joinGroupByCode(code.trim());
       setActiveGroupId(groupId);
       // 참여 완료 → 다음 단계(네비게이션 연결)에서 홈으로 보냄
+      await queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 그룹 목록 갱신
     } catch (e: any) {
       Alert.alert(
         t("onboarding.joinFailedTitle"),
@@ -70,6 +75,7 @@ export function OnboardingScreen() {
     try {
       const g = await createPersonalGroup();
       setActiveGroupId(g.id);
+      await queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 그룹 목록 갱신
     } catch (e: any) {
       Alert.alert(
         t("onboarding.errorTitle"),
