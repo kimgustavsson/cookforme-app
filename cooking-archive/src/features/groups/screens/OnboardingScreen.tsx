@@ -11,6 +11,7 @@ import {
   joinGroupByCode,
 } from "../api/groupApi";
 import { theme } from "@/theme";
+import * as Clipboard from "expo-clipboard";
 
 type Mode = "choose" | "create" | "join" | "done";
 
@@ -78,6 +79,12 @@ export function OnboardingScreen() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleCopy() {
+    if (!createdCode) return;
+    await Clipboard.setStringAsync(createdCode);
+    Toast.show({ type: "success", text1: t("onboarding.codeCopied") });
   }
 
   // done 화면에서 "시작하기" → 이제 활성화 + 무효화 → 홈으로 자동 전환
@@ -157,13 +164,23 @@ export function OnboardingScreen() {
   }
 
   // 4) 그룹 생성 완료 → 코드 보여주기 + 시작하기
+  // 4) 그룹 생성 완료 → 환영 + 코드 + 복사/시작하기
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>{t("onboarding.doneTitle")}</Text>
+      <Text style={styles.welcome}>{t("onboarding.doneWelcome")}</Text>
       <Text style={styles.sub}>{t("onboarding.doneShareHint")}</Text>
-      <View style={styles.codeBox}>
+
+      {/* 코드 박스를 눌러도 복사됨 */}
+      <Pressable onPress={handleCopy} style={styles.codeBox}>
         <Text style={styles.bigCode}>{createdCode}</Text>
-      </View>
+      </Pressable>
+
+      <Button
+        label={t("onboarding.copyCode")}
+        variant="ghost"
+        onPress={handleCopy}
+      />
       <Text style={styles.sub}>{t("onboarding.doneSettingsHint")}</Text>
       <Button label={t("onboarding.startCooking")} onPress={handleStart} />
     </View>
@@ -206,5 +223,11 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 8,
     color: theme.colors.accent,
+  },
+  welcome: {
+    fontSize: 16,
+    color: theme.colors.text,
+    textAlign: "center",
+    marginBottom: 4,
   },
 });

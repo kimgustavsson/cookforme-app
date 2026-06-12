@@ -23,5 +23,8 @@
   "retry": "Please try again.",
   "joinedToast": "You've joined the group!",
   "soloToast": "All set! Your personal recipe space is ready.",
-  "startCooking": "Start cooking"
+  "startCooking": "Start cooking",
+  "doneWelcome": "You're all set to cook together 🍳",
+  "copyCode": "Copy code",
+  "codeCopied": "Code copied!"
 }

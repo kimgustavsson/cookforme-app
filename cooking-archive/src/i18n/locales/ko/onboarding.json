@@ -23,5 +23,8 @@
   "retry": "다시 시도해 주세요.",
   "joinedToast": "그룹에 참여했어요!",
   "soloToast": "시작할게요! 나만의 레시피 공간이에요.",
-  "startCooking": "시작하기"
+  "startCooking": "시작하기",
+  "doneWelcome": "이제 함께 요리할 준비가 됐어요 🍳",
+  "copyCode": "코드 복사",
+  "codeCopied": "코드를 복사했어요!"
 }
