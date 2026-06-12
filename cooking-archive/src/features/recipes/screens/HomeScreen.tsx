@@ -13,6 +13,10 @@ import { useActiveGroup } from "@/features/groups";
 import { theme } from "@/theme";
 import type { RecipesStackParamList } from "@/app/navigation/types";
 
+// for testing
+import { supabase } from "@/services/supabase";
+import { Button } from "@/components/ui/Button";
+
 type Nav = NativeStackNavigationProp<RecipesStackParamList, "Home">;
 
 // 스케치 ① 랜딩. 링크/사진 입력 → 추출 → 확인 화면으로 이동.
@@ -46,6 +50,21 @@ export function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.h1}>{t("home.title")}</Text>
+
+      <Button
+        label="테스트: extract 호출"
+        onPress={async () => {
+          const { data, error } = await supabase.functions.invoke("extract", {
+            body: { kind: "web", url: "https://example.com" },
+          });
+          console.log(
+            "extract 응답:",
+            JSON.stringify(data),
+            "에러:",
+            error?.message,
+          );
+        }}
+      />
 
       <Text style={styles.label}>{t("home.recipeLink")}</Text>
       <RecipeLinkInput onSubmit={(url) => handleSource({ url })} />
