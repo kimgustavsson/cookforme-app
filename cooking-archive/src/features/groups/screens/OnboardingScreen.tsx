@@ -1,13 +1,8 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Alert,
-  Pressable,
-} from "react-native";
+import { View, Text, TextInput, StyleSheet, Pressable } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
 import { Button } from "@/components/ui/Button";
 import { useActiveGroup } from "../hooks/useActiveGroup";
 import {
@@ -16,74 +11,79 @@ import {
   joinGroupByCode,
 } from "../api/groupApi";
 import { theme } from "@/theme";
-import { useQueryClient } from "@tanstack/react-query";
 
 type Mode = "choose" | "create" | "join" | "done";
 
 // 처음 한 번 뜨는 온보딩: 새 그룹 만들기 / 코드로 참여 / 혼자 시작.
-// 어느 길이든 끝에 setActiveGroupId로 활성 그룹을 정함.
 export function OnboardingScreen() {
   const { t } = useTranslation();
   const { setActiveGroupId } = useActiveGroup();
+  const queryClient = useQueryClient();
+
   const [mode, setMode] = useState<Mode>("choose");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+  const [createdGroupId, setCreatedGroupId] = useState<string | null>(null); // ← 추가
   const [busy, setBusy] = useState(false);
 
-  const queryClient = useQueryClient(); // Bring the query client into scope
-
+  // 새 그룹: DB엔 만들어지지만, "시작하기"를 누르기 전엔 활성화/이동을 미룸
   async function handleCreate() {
     if (!name.trim()) return;
     setBusy(true);
     try {
       const g = await createGroup(name.trim());
-      setActiveGroupId(g.id); // 활성 그룹 지정
-      await queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 그룹 목록 갱신
-      setCreatedCode(g.inviteCode); // 코드를 크게 보여주기
+      setCreatedGroupId(g.id); // id만 기억 (아직 활성화 X → 화면 안 넘어감)
+      setCreatedCode(g.inviteCode);
       setMode("done");
     } catch (e: any) {
-      Alert.alert(
-        t("onboarding.errorTitle"),
-        e.message ?? t("onboarding.createFailed"),
-      );
+      Toast.show({
+        type: "error",
+        text1: e.message ?? t("onboarding.createFailed"),
+      });
     } finally {
       setBusy(false);
     }
   }
 
+  // 참여: 토스트 띄우고 자동 전환에 맡김
   async function handleJoin() {
     if (!code.trim()) return;
     setBusy(true);
     try {
       const groupId = await joinGroupByCode(code.trim());
       setActiveGroupId(groupId);
-      // 참여 완료 → 다음 단계(네비게이션 연결)에서 홈으로 보냄
-      await queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 그룹 목록 갱신
+      await queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      Toast.show({ type: "success", text1: t("onboarding.joinedToast") });
     } catch (e: any) {
-      Alert.alert(
-        t("onboarding.joinFailedTitle"),
-        e.message ?? t("onboarding.joinFailed"),
-      );
+      Toast.show({
+        type: "error",
+        text1: e.message ?? t("onboarding.joinFailed"),
+      });
     } finally {
       setBusy(false);
     }
   }
 
+  // 혼자: 토스트 띄우고 자동 전환에 맡김
   async function handleSolo() {
     setBusy(true);
     try {
       const g = await createPersonalGroup();
       setActiveGroupId(g.id);
-      await queryClient.invalidateQueries({ queryKey: ["myGroups"] }); // 그룹 목록 갱신
+      await queryClient.invalidateQueries({ queryKey: ["myGroups"] });
+      Toast.show({ type: "success", text1: t("onboarding.soloToast") });
     } catch (e: any) {
-      Alert.alert(
-        t("onboarding.errorTitle"),
-        e.message ?? t("onboarding.retry"),
-      );
+      Toast.show({ type: "error", text1: e.message ?? t("onboarding.retry") });
     } finally {
       setBusy(false);
     }
+  }
+
+  // done 화면에서 "시작하기" → 이제 활성화 + 무효화 → 홈으로 자동 전환
+  async function handleStart() {
+    if (createdGroupId) setActiveGroupId(createdGroupId);
+    await queryClient.invalidateQueries({ queryKey: ["myGroups"] });
   }
 
   // 1) 선택 화면
@@ -156,7 +156,7 @@ export function OnboardingScreen() {
     );
   }
 
-  // 4) 그룹 생성 완료 → 코드 공유 화면
+  // 4) 그룹 생성 완료 → 코드 보여주기 + 시작하기
   return (
     <View style={styles.container}>
       <Text style={styles.h1}>{t("onboarding.doneTitle")}</Text>
@@ -165,6 +165,7 @@ export function OnboardingScreen() {
         <Text style={styles.bigCode}>{createdCode}</Text>
       </View>
       <Text style={styles.sub}>{t("onboarding.doneSettingsHint")}</Text>
+      <Button label={t("onboarding.startCooking")} onPress={handleStart} />
     </View>
   );
 }

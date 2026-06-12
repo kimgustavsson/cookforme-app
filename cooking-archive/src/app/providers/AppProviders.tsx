@@ -1,12 +1,11 @@
-import { ReactNode } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { queryClient, queryPersister } from '@/services/queryClient';
-import '@/i18n'; // i18next 초기화 (import 시 실행)
+import { ReactNode } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NavigationContainer } from "@react-navigation/native";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import Toast from "react-native-toast-message";
+import { queryClient, queryPersister } from "@/services/queryClient";
+import "@/i18n";
 
-// 모든 전역 컨텍스트를 한 곳에 모읍니다.
-// 나중에 테마 프로바이더 등을 추가해도 여기만 건드리면 됩니다.
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <SafeAreaProvider>
@@ -16,6 +15,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
       >
         <NavigationContainer>{children}</NavigationContainer>
       </PersistQueryClientProvider>
+      {/* ★ Toast message should be displayed above all other components */}
+      <Toast />
     </SafeAreaProvider>
   );
 }

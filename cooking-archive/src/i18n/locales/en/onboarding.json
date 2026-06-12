@@ -20,5 +20,8 @@
   "createFailed": "Couldn't create the group.",
   "joinFailedTitle": "Couldn't join",
   "joinFailed": "Please check the code.",
-  "retry": "Please try again."
+  "retry": "Please try again.",
+  "joinedToast": "You've joined the group!",
+  "soloToast": "All set! Your personal recipe space is ready.",
+  "startCooking": "Start cooking"
 }
