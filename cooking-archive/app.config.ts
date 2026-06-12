@@ -24,7 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: "com.example.cookingarchive",
     permissions: ["CAMERA", "READ_MEDIA_IMAGES"],
   },
-  plugins: ["expo-localization", "expo-image-picker"],
+  plugins: ["expo-localization", "expo-image-picker", "expo-image"],
   extra: {
     // 앱에는 공개 가능한 값만. 비밀 키는 백엔드(Supabase)에만 둡니다.
     supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,

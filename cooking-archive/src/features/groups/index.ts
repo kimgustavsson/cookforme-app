@@ -1,3 +1,10 @@
 export { useActiveGroup } from "./hooks/useActiveGroup";
-export { myGroups, createGroup, createPersonalGroup, joinGroupByCode } from "./api/groupApi";
+export { useMyGroups } from "./hooks/useMyGroups";
+export {
+  myGroups,
+  createGroup,
+  createPersonalGroup,
+  joinGroupByCode,
+} from "./api/groupApi";
+export { OnboardingScreen } from "./screens/OnboardingScreen";
 export type { Group, GroupMember } from "./types";
